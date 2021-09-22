@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Join Competition{% endblock %}
+
+{% block content %}
+  <form action="/join-competition" method="POST">
+    <label for="join_code">Join Code:</label><br>
+    <input class="input_field" type="text" name="join_code"><br><br>
+    <input type="submit" value="Submit">
+  </form>
+{% endblock %}

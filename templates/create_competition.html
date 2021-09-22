@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Create Note{% endblock %}
+
+{% block content %}
+  <form action="/create-competition" method="POST">
+    <label for="name">Name:</label><br>
+    <input class="input_field" type="text" name="name"><br><br>
+    <input type="submit" value="Submit">
+  </form>
+{% endblock %}

@@ -1,4 +1,4 @@
-# /server.py
+from models import create_competition_sql, check_new_user, join_competition_sql, get_competition, get_competitions
 
 from functools import wraps
 import json
@@ -85,7 +85,24 @@ def logout():
 @app.route("/home")
 @requires_auth
 def home():
-    return render_template('home.html', userinfo=session['profile'], indent=4)
+    check_new_user(session['profile']['user_id'])
+
+    # get list of competition IDs for this user
+    competition_ids = get_competitions(session['profile']['user_id'])
+    print(competition_ids)
+
+    # get info about all the competitions associated with the user
+    competitions_info = [get_competition(int(id)) for id in competition_ids]
+    print(competitions_info)
+    print(competitions_info[0])
+
+    # isolate all the competition names
+    competition_names = [competitions_info[i][0][1] for i in range(len(competitions_info))]
+
+    # make links to go along with each name with the appropriate id
+    display_links = ['/display-competition?id=' + str(competitions_info[i][0][0]) for i in range(len(competitions_info))]
+
+    return render_template('home.html', userinfo=session['profile'], competition_names=competition_names, display_links=display_links)
 
 @app.route("/profile")
 @requires_auth
@@ -96,3 +113,40 @@ def profile():
 @requires_auth
 def about():
     return render_template('about.html')
+
+@app.route("/create-competition", methods=["GET","POST"])
+@requires_auth
+def create_competition():
+    if request.method == 'POST':
+        print("test")
+        competition_name = request.form["name"]
+        this_user = session['profile']['user_id']
+        success = create_competition_sql(competition_name, this_user)
+        print("test_@")
+        if not success:
+            return render_template('error.html', error_message='Could not create competition. Please try again later.')
+        return redirect('/display-competition')
+
+    return render_template('create_competition.html')
+
+@app.route("/display-competition")
+@requires_auth
+def display_competition():
+    id = request.args.get('id')
+
+    competition = get_competition(id)
+
+    name = competition[0][1]
+    join_code = competition[0][6]
+
+    return render_template('display_competition.html', name=name, join_code=join_code)
+
+@app.route("/join-competition", methods=["GET","POST"])
+@requires_auth
+def join_competition():
+    if request.method == 'POST':
+        res = join_competition_sql(request.form["join_code"], session['profile']['user_id'])
+        print(res)
+
+
+    return render_template('join_competition.html')

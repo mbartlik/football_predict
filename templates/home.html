@@ -3,5 +3,15 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  <h1>HOME</h1>
+<h2 style="margin-top: 0px;">Your Competitions</h2>
+<div id="note_div">
+    {% for name in competition_names %}
+      <a class="note" href={{display_links[loop.index-1]}}>
+        <div>
+          <p class="note_text">{{name}}</p>
+        </div>
+      </a>
+      <hr>
+    {% endfor %}
+</div>
 {% endblock %}
