@@ -7,8 +7,8 @@ import random
 # info about signing into the google cloud sql database
 db_user = 'root'
 db_password = ''
-db_name = 'FootballPredictionChallenge'
-db_connection_name = 'seismic-gecko-326618:us-east4:football-prediction-challenge'
+db_name = 'main'
+db_connection_name = 'seismic-gecko-326618:us-east4:nfl-prediction-challenge'
 
 # dates for games that open the week
 open_dates = [datetime.datetime(2021,9,9),datetime.datetime(2021,9,16), datetime.datetime(2021,9,23), datetime.datetime(2021,9,30), datetime.datetime(2021,10,7), datetime.datetime(2021,10,14), datetime.datetime(2021,10,21), datetime.datetime(2021,10,28), datetime.datetime(2021,11,4), datetime.datetime(2021,11,11), datetime.datetime(2021,11,18), datetime.datetime(2021,11,25), datetime.datetime(2021,12,2), datetime.datetime(2021,12,9), datetime.datetime(2021,12,16), datetime.datetime(2021,12,23), datetime.datetime(2022,1,2), datetime.datetime(2022,1,9)]
@@ -19,8 +19,6 @@ close_dates = [datetime.datetime(2021,9,13), datetime.datetime(2021,9,20), datet
 # check if a user is already in the database
 # if not they are new and will be added to the database
 def check_new_user(username):
-    print("Checking new user")
-    print(username)
     conn = get_connection()
     cur = conn.cursor()
     count = cur.execute('SELECT * FROM Users WHERE Name=%s', (username,))
@@ -132,7 +130,7 @@ def create_competition_sql(competition_name, user):
     conn.commit()
     conn.close()
 
-    return True
+    return competition_id
 
 
 # INPUT: join code correlating to a competition
@@ -160,7 +158,6 @@ def join_competition_sql(join_code, username):
 
     # convert the array to a string to put in db
     new_competition_users = arr_to_str(competition_users_li)
-    print(new_competition_users)
 
     # update the users for this competition
     cur.execute('UPDATE Competitions SET Users=%s WHERE JoinCode=%s', (new_competition_users,join_code))
@@ -187,6 +184,8 @@ def join_competition_sql(join_code, username):
     conn.commit()
     conn.close()
 
+    return competition_id
+
 
 # get info about a single competition based on id
 def get_competition(id):
@@ -209,5 +208,8 @@ def get_competitions(username):
     cur.execute('SELECT Competitions FROM Users WHERE Name=%s',(username,))
 
     competitions = cur.fetchall()
+
+    if competitions[0][0] == '':
+        return []
 
     return list(competitions[0][0].split(','))

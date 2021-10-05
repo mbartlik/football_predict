@@ -51,6 +51,9 @@ def callback_handling():
         'name': userinfo['name'],
         'picture': userinfo['picture']
     }
+
+    check_new_user(session['profile']['user_id'])
+
     return redirect('/home')
 
 def requires_auth(f):
@@ -85,22 +88,24 @@ def logout():
 @app.route("/home")
 @requires_auth
 def home():
-    check_new_user(session['profile']['user_id'])
-
     # get list of competition IDs for this user
     competition_ids = get_competitions(session['profile']['user_id'])
-    print(competition_ids)
 
-    # get info about all the competitions associated with the user
-    competitions_info = [get_competition(int(id)) for id in competition_ids]
-    print(competitions_info)
-    print(competitions_info[0])
+    if len(competition_ids) != 0:
+        # get info about all the competitions associated with the user
+        competitions_info = [get_competition(int(id)) for id in competition_ids]
 
-    # isolate all the competition names
-    competition_names = [competitions_info[i][0][1] for i in range(len(competitions_info))]
+        # isolate all the competition names
+        competition_names = [competitions_info[i][0][1] for i in range(len(competitions_info))]
 
-    # make links to go along with each name with the appropriate id
-    display_links = ['/display-competition?id=' + str(competitions_info[i][0][0]) for i in range(len(competitions_info))]
+        # make links to go along with each name with the appropriate id
+        display_links = ['/display-competition?id=' + str(competitions_info[i][0][0]) for i in range(len(competitions_info))]
+    else:
+        competitions_info = []
+        competition_names = []
+        display_links = []
+
+    print(x)
 
     return render_template('home.html', userinfo=session['profile'], competition_names=competition_names, display_links=display_links)
 
@@ -118,14 +123,10 @@ def about():
 @requires_auth
 def create_competition():
     if request.method == 'POST':
-        print("test")
         competition_name = request.form["name"]
         this_user = session['profile']['user_id']
-        success = create_competition_sql(competition_name, this_user)
-        print("test_@")
-        if not success:
-            return render_template('error.html', error_message='Could not create competition. Please try again later.')
-        return redirect('/display-competition')
+        competition_id = create_competition_sql(competition_name, this_user)
+        return redirect('/display-competition?id=' + str(competition_id))
 
     return render_template('create_competition.html')
 
@@ -135,7 +136,6 @@ def display_competition():
     id = request.args.get('id')
 
     competition = get_competition(id)
-
     name = competition[0][1]
     join_code = competition[0][6]
 
@@ -146,7 +146,12 @@ def display_competition():
 def join_competition():
     if request.method == 'POST':
         res = join_competition_sql(request.form["join_code"], session['profile']['user_id'])
-        print(res)
+        if res == 'Invalid join code':
+            print('Invalid join code')
+        elif res == 'You are already in this competition':
+            print('You are already in this competition')
+        else:
+            return redirect('/display-competition?id=' + str(res))
 
 
     return render_template('join_competition.html')
