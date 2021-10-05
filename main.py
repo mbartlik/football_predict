@@ -93,7 +93,7 @@ def home():
 
     if len(competition_ids) != 0:
         # get info about all the competitions associated with the user
-        competitions_info = [get_competition(int(id)) for id in competition_ids]
+        competitions_info = [get_competition(id) for id in competition_ids]
 
         # isolate all the competition names
         competition_names = [competitions_info[i][0][1] for i in range(len(competitions_info))]
@@ -104,8 +104,6 @@ def home():
         competitions_info = []
         competition_names = []
         display_links = []
-
-    print(x)
 
     return render_template('home.html', userinfo=session['profile'], competition_names=competition_names, display_links=display_links)
 
@@ -137,7 +135,7 @@ def display_competition():
 
     competition = get_competition(id)
     name = competition[0][1]
-    join_code = competition[0][6]
+    join_code = competition[0][5]
 
     return render_template('display_competition.html', name=name, join_code=join_code)
 

@@ -25,7 +25,7 @@ def check_new_user(username):
 
     # new user
     if count < 1:
-        cur.execute('INSERT INTO Users (Name, Competitions, WinCount, DisplayName) VALUES (%s,%s,%s,%s)', (username,'',0,''))
+        cur.execute('INSERT INTO Users (Name, WinCount, DisplayName) VALUES (%s,%s,%s)', (username,0,''))
         conn.commit()
     
     conn.close()
@@ -79,7 +79,7 @@ def get_connection():
 
 
 # Makes a new competition in the gcloud sql database
-def create_competition_sql(competition_name, user):
+def create_competition_sql(competition_name, username):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -107,25 +107,15 @@ def create_competition_sql(competition_name, user):
             break
     
     # add the new competition
-    cur.execute('INSERT INTO Competitions (Name, Users, DateCreated, DateEnd, Week, JoinCode) VALUES (%s, %s, %s, %s, %s, %s)', (competition_name, user, open_date, close_date, nfl_week, join_code))
+    cur.execute('INSERT INTO Competitions (Name, DateCreated, DateEnd, Week, JoinCode) VALUES (%s, %s, %s, %s, %s)', (competition_name, open_date, close_date, nfl_week, join_code))
 
-    # get the user's current info to add the new competition
-    cur.execute('SELECT * FROM Users WHERE Name=%s',(user,))
-    query = cur.fetchall()
-    user_competitions = query[0][1]
-    
     # get the new competition's id
     cur.execute('SELECT * FROM Competitions WHERE JoinCode=%s',(join_code,))
     query = cur.fetchall()
     competition_id = query[0][0]
 
-    if len(user_competitions) == 0:
-        user_competitions = '' + str(competition_id)
-    else:
-        user_competitions += ',' + str(competition_id)
-
-    # update users db with the new competition id addition
-    cur.execute('UPDATE Users SET Competitions=%s WHERE Name=%s',(user_competitions,user))
+    # add this user and competition id to the competing relation
+    cur.execute('INSERT INTO Competing (Username, CompetitionID) VALUES (%s, %s)', (username, competition_id))
 
     conn.commit()
     conn.close()
@@ -143,44 +133,12 @@ def join_competition_sql(join_code, username):
     matching_competition_count = cur.execute('SELECT * FROM Competitions WHERE JoinCode=%s',(join_code,))
     if matching_competition_count == 0:
         return 'Invalid join code'
+
+    competition_id = cur.fetchall()[0][0]
+
+    # add this user and competition id to the competing relation
+    cur.execute('INSERT INTO Competing (Username, CompetitionID) VALUES (%s, %s)', (username, competition_id))
     
-    # get the users for this competition
-    competition = cur.fetchall()
-    competition_users = competition[0][2]
-    competition_users_li = list(competition_users.split(","))
-
-    # check to see if this user is already in the competition
-    if username in competition_users_li:
-        return 'You are already in this competition'
-
-    # add this user
-    competition_users_li.append(username)
-
-    # convert the array to a string to put in db
-    new_competition_users = arr_to_str(competition_users_li)
-
-    # update the users for this competition
-    cur.execute('UPDATE Competitions SET Users=%s WHERE JoinCode=%s', (new_competition_users,join_code))
-
-
-    # get the user's current info to add the new competition
-    cur.execute('SELECT * FROM Users WHERE Name=%s',(username,))
-    query = cur.fetchall()
-    user_competitions = query[0][1]
-    
-    # get the new competition's id
-    cur.execute('SELECT * FROM Competitions WHERE JoinCode=%s',(join_code,))
-    query = cur.fetchall()
-    competition_id = query[0][0]
-
-    if len(user_competitions) == 0:
-        user_competitions = '' + str(competition_id)
-    else:
-        user_competitions += ',' + str(competition_id)
-
-    # update users db with the new competition id addition
-    cur.execute('UPDATE Users SET Competitions=%s WHERE Name=%s',(user_competitions,username))
-
     conn.commit()
     conn.close()
 
@@ -205,11 +163,12 @@ def get_competitions(username):
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute('SELECT Competitions FROM Users WHERE Name=%s',(username,))
+    cur.execute('SELECT CompetitionID FROM Competing WHERE Username=%s',(username,))
 
     competitions = cur.fetchall()
 
-    if competitions[0][0] == '':
-        return []
+    competition_ids = [competition[0] for competition in competitions]
 
-    return list(competitions[0][0].split(','))
+    print(competition_ids)
+
+    return competition_ids
