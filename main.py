@@ -1,4 +1,4 @@
-from models import create_competition_sql, check_new_user, join_competition_sql, get_competition, get_competitions
+from models import create_competition_sql, check_new_user, join_competition_sql, get_competition, get_competitions, get_users_in_competition, get_user_picks, get_games, update_picks, get_week
 
 from functools import wraps
 import json
@@ -99,7 +99,7 @@ def home():
         competition_names = [competitions_info[i][0][1] for i in range(len(competitions_info))]
 
         # make links to go along with each name with the appropriate id
-        display_links = ['/display-competition?id=' + str(competitions_info[i][0][0]) for i in range(len(competitions_info))]
+        display_links = ['/display-competition?competition_id=' + str(competitions_info[i][0][0]) for i in range(len(competitions_info))]
     else:
         competitions_info = []
         competition_names = []
@@ -124,20 +124,32 @@ def create_competition():
         competition_name = request.form["name"]
         this_user = session['profile']['user_id']
         competition_id = create_competition_sql(competition_name, this_user)
-        return redirect('/display-competition?id=' + str(competition_id))
+        return redirect('/display-competition?competition_id=' + str(competition_id))
 
     return render_template('create_competition.html')
 
 @app.route("/display-competition")
 @requires_auth
 def display_competition():
-    id = request.args.get('id')
+    id = request.args.get('competition_id')
 
     competition = get_competition(id)
     name = competition[0][1]
     join_code = competition[0][5]
 
-    return render_template('display_competition.html', name=name, join_code=join_code)
+    users = get_users_in_competition(id)
+
+    picks = get_user_picks(session['profile']['user_id'],int(id))
+
+    picks_made = False
+    if len(picks) > 0:
+        picks_made = True
+
+    week = get_week(id)
+
+    make_picks_link = '/make-picks?competition_id=' + id + '&week=' + str(week)
+
+    return render_template('display_competition.html', name=name, join_code=join_code, users=users, picks=picks, picks_made=picks_made, make_picks_link=make_picks_link)
 
 @app.route("/join-competition", methods=["GET","POST"])
 @requires_auth
@@ -153,3 +165,23 @@ def join_competition():
 
 
     return render_template('join_competition.html')
+
+@app.route("/make-picks", methods=["GET", "POST"])
+@requires_auth
+def make_picks():
+    if request.method == 'POST':
+        data = json.loads(request.data)
+        picks = data["picks"]
+        competition_id = data["competition_id"]
+
+        update_picks(competition_id, session['profile']['user_id'], picks)
+
+        return "Success"
+
+    competition_id = request.args.get('competition_id')
+    week = request.args.get('week')
+
+    # FIX LATER - MUST GET WEEK NUMBER DYNAMICALLY
+    matchups = get_games(week)
+
+    return render_template('make_picks.html', matchups=matchups, competition_id=competition_id)

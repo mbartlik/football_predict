@@ -18,5 +18,28 @@ CREATE TABLE Users (
 
 CREATE TABLE Competing (
     Username VARCHAR(100) NOT NULL,
-    CompetitionID INT NOT NULL
+    CompetitionID INT NOT NULL,
+    Pick1 INT, 
+    Pick2 INT, 
+    Pick3 INT, 
+    Pick4 INT, 
+    Pick5 INT, 
+    Pick6 INT, 
+    Pick7 INT, 
+    Pick8 INT, 
+    Pick9 INT, 
+    Pick10 INT, 
+    Pick11 INT, 
+    Pick12 INT, 
+    Pick13 INT, 
+    Pick14 INT, 
+    Pick15 INT, 
+    Pick16 INT
+);
+
+CREATE TABLE Games (
+    Week INT NOT NULL,
+    Team VARCHAR(50),
+    PickSlot INT NOT NULL,
+    Home INT NOT NULL
 );

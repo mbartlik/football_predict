@@ -3,8 +3,42 @@
 {% block title %}Display Competition{% endblock %}
 
 {% block content %}
-<h2>{{name}}</h2>
+<h1 style="display:inline">{{name}}</h1>
+<p style="display:inline; margin-left:30px">{{join_code}}</p>
 
-<p>{{join_code}}</p>
+<hr>
+
+<div>
+    {% if picks_made %}
+        <table>
+            <tr>
+                <th>Game</th>
+                <th>Your pick</th>
+            </tr>
+            {% for pick in picks %}
+                <tr>
+                    <td>{{pick[1][1]}} @ {{pick[1][0]}}</td>
+                    <td>{{pick[0]}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <a href={{make_picks_link}}>Edit picks</a>
+    {% else %}
+        <p>You haven't made your picks yet</p>
+        <a href={{make_picks_link}}>Make picks</a>
+    {% endif %}
+
+</div>
+
+<hr>
+
+<h3>Users</h3>
+<div id="note_div">
+    {% for user in users %}
+        <p>{{user}}</p>
+    {% endfor %}
+</div>
+
+<br>
 
 {% endblock %}

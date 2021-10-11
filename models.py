@@ -169,6 +169,105 @@ def get_competitions(username):
 
     competition_ids = [competition[0] for competition in competitions]
 
-    print(competition_ids)
-
     return competition_ids
+
+def get_users_in_competition(competition_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute('SELECT Username FROM Competing WHERE CompetitionID=%s',(competition_id,))
+
+    users = cur.fetchall()
+
+    users_list = [user[0] for user in users]
+
+    return users_list
+
+
+# Given a username and competition id, return all the picks by that user for a competition
+# Returns binary array, where 1 is a pick for home team, 0 is away
+def get_user_picks(username, competition_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    exists = cur.execute('SELECT * FROM Competing WHERE Username=%s AND CompetitionID=%s', (username, competition_id))
+
+    if exists == 0:
+        return 'competition does not exist'
+    
+    query_res = cur.fetchall()
+    binary_picks = query_res[0][2:18]
+
+    # get current week
+    cur.execute('SELECT Week FROM Competitions WHERE ID=%s',(competition_id,))
+    week = cur.fetchall()[0][0]
+
+    # get list of home teams
+    cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=1', (week, ))
+    home_teams = cur.fetchall()
+
+    # get list of away teams
+    cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=0', (week, ))
+    away_teams = cur.fetchall()
+
+    picks = []
+
+    # assign binary picks to actual team values with the home and away teams
+    for i in range(len(binary_picks)):
+        if binary_picks[i] == 0:
+            picks.append((away_teams[i][0], (home_teams[i][0], away_teams[i][0])))
+        elif binary_picks[i] == 1:
+            picks.append((home_teams[i][0], (home_teams[i][0], away_teams[i][0])))
+        else:
+            break
+
+    conn.close()
+
+    return picks
+
+
+# Returns a list of tuples, where each tuple is 2 teams, the 1st one being the home team
+# The week of games must be specified as an int
+def get_games(week):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # get home teams
+    cur.execute('SELECT * FROM Games WHERE Week=%s AND Home=1', (week,))
+    home_teams = cur.fetchall()
+
+    # get away teams
+    cur.execute('SELECT * FROM Games WHERE Week=%s AND Home=0', (week,))
+    away_teams = cur.fetchall()
+
+    matchups = []
+    for i in range(16):
+        if home_teams[i][2] != away_teams[i][2]:
+            return 'Error with database. Let Max know'
+        matchups.append((home_teams[i][1], away_teams[i][1]))
+
+    conn.close()
+
+    return matchups
+
+def update_picks(competition_id, username, picks):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute('UPDATE Competing SET Pick1=%s, Pick2=%s, Pick3=%s, Pick4=%s, Pick5=%s, Pick6=%s, Pick7=%s, Pick8=%s, Pick9=%s, Pick10=%s, Pick11=%s, Pick12=%s, Pick13=%s, Pick14=%s, Pick15=%s, Pick16=%s WHERE Username=%s AND CompetitionID=%s', (picks[0], picks[1], picks[2], picks[3], picks[4], picks[5], picks[6], picks[7], picks[8], picks[9], picks[10], picks[11], picks[12], picks[13], picks[14], picks[15], username, competition_id))
+
+    conn.commit()
+    conn.close()
+
+
+# Gets the week of a competition, given the competition id
+def get_week(competition_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute('SELECT Week FROM Competitions WHERE ID=%s',(competition_id,))
+    week = cur.fetchall()[0][0]
+
+    conn.close()
+
+    return week
