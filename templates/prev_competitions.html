@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Previous Competitions{% endblock %}
 
 {% block content %}
 <div>
-  <h2 style="margin-top: 0px;">Upcoming Competitions</h2>
+  <h2 style="margin-top: 0px;">Previous Competitions</h2>
   <div id="note_div">
       {% for name in competition_names %}
         <a class="note" href={{display_links[loop.index-1]}}>

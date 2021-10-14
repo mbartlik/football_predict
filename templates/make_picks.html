@@ -2,6 +2,9 @@
 <html>
   <head>
     <link rel="stylesheet" href={{ url_for('static', filename='style.css') }}>
+    <script type="text/javascript">
+      var binary_picks = '{{ binary_picks }}'
+    </script>
     <script src="{{url_for('static', filename='picks.js')}}"></script>
     <title>Make Picks</title>
   </head>
@@ -72,6 +75,22 @@
         <button id="submit_picks_btn">Submit</button>
     </div>
 
-    <h1 id="competition_id" style="display: none">{{competition_id}}</h1>
+    <p id="competition_id" style="display: none">{{competition_id}}</p>
+    <p id="pick_1" style="display:none">{{binary_picks[0]}}</p>
+    <p id="pick_2" style="display:none">{{binary_picks[1]}}</p>
+    <p id="pick_3" style="display:none">{{binary_picks[2]}}</p>
+    <p id="pick_4" style="display:none">{{binary_picks[3]}}</p>
+    <p id="pick_5" style="display:none">{{binary_picks[4]}}</p>
+    <p id="pick_6" style="display:none">{{binary_picks[5]}}</p>
+    <p id="pick_7" style="display:none">{{binary_picks[6]}}</p>
+    <p id="pick_8" style="display:none">{{binary_picks[7]}}</p>
+    <p id="pick_9" style="display:none">{{binary_picks[8]}}</p>
+    <p id="pick_10" style="display:none">{{binary_picks[9]}}</p>
+    <p id="pick_11" style="display:none">{{binary_picks[10]}}</p>
+    <p id="pick_12" style="display:none">{{binary_picks[11]}}</p>
+    <p id="pick_13" style="display:none">{{binary_picks[12]}}</p>
+    <p id="pick_14" style="display:none">{{binary_picks[13]}}</p>
+    <p id="pick_15" style="display:none">{{binary_picks[14]}}</p>
+    <p id="pick_16" style="display:none">{{binary_picks[15]}}</p>
   </body>
 </html>

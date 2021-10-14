@@ -1,4 +1,4 @@
-from models import create_competition_sql, check_new_user, join_competition_sql, get_competition, get_competitions, get_users_in_competition, get_user_picks, get_games, update_picks, get_week
+from models import create_competition_sql, check_new_user, join_competition_sql, get_competition, get_competitions, get_users_in_competition, get_user_picks, get_games, update_picks, get_week, get_current_nfl_week, get_binary_picks
 
 from functools import wraps
 import json
@@ -88,20 +88,24 @@ def logout():
 @app.route("/home")
 @requires_auth
 def home():
-    # get list of competition IDs for this user
-    competition_ids = get_competitions(session['profile']['user_id'])
+    # get list of competitions with details for this user
+    competitions_info = get_competitions(session['profile']['user_id'])
 
-    if len(competition_ids) != 0:
-        # get info about all the competitions associated with the user
-        competitions_info = [get_competition(id) for id in competition_ids]
+    # get current week
+    nfl_week = get_current_nfl_week()
 
+    current_competitions = []
+    for competition in competitions_info:
+        if competition[0][4] >= nfl_week:
+            current_competitions.append(competition)
+
+    if len(current_competitions) != 0:
         # isolate all the competition names
-        competition_names = [competitions_info[i][0][1] for i in range(len(competitions_info))]
+        competition_names = [current_competitions[i][0][1] for i in range(len(current_competitions))]
 
         # make links to go along with each name with the appropriate id
-        display_links = ['/display-competition?competition_id=' + str(competitions_info[i][0][0]) for i in range(len(competitions_info))]
+        display_links = ['/display-competition?competition_id=' + str(current_competitions[i][0][0]) for i in range(len(current_competitions))]
     else:
-        competitions_info = []
         competition_names = []
         display_links = []
 
@@ -184,4 +188,32 @@ def make_picks():
     # FIX LATER - MUST GET WEEK NUMBER DYNAMICALLY
     matchups = get_games(week)
 
-    return render_template('make_picks.html', matchups=matchups, competition_id=competition_id)
+    binary_picks = get_binary_picks(session['profile']['user_id'], competition_id)
+
+    return render_template('make_picks.html', matchups=matchups, competition_id=competition_id, binary_picks=binary_picks)
+
+@app.route('/previous-competitions')
+@requires_auth
+def prev_competitions():
+    # get list of competitions with details for this user
+    competitions_info = get_competitions(session['profile']['user_id'])
+
+    # get current week
+    nfl_week = get_current_nfl_week()
+
+    prev_competitions = []
+    for competition in competitions_info:
+        if competition[0][4] < nfl_week:
+            prev_competitions.append(competition)
+
+    if len(prev_competitions) != 0:
+        # isolate all the competition names
+        competition_names = [prev_competitions[i][0][1] for i in range(len(prev_competitions))]
+
+        # make links to go along with each name with the appropriate id
+        display_links = ['/display-competition?competition_id=' + str(prev_competitions[i][0][0]) for i in range(len(prev_competitions))]
+    else:
+        competition_names = []
+        display_links = []
+
+    return render_template('prev_competitions.html', userinfo=session['profile'], competition_names=competition_names, display_links=display_links)

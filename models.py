@@ -44,6 +44,20 @@ def arr_to_str(arr):
 
     return res
 
+# gets the current nfl week
+def get_current_nfl_week():
+    nfl_week = -1
+    python_date = datetime.datetime.now()
+    for i in range(len(open_dates)):
+        if i == (len(open_dates) - 1):
+            raise Exception('Date out of range')   
+        if python_date < open_dates[i]:
+            nfl_week = i + 1
+            break
+
+    return nfl_week
+
+
 # Takes python datetime object and returns a string that is consistent with SQL date formatting
 def get_sql_date(date):
     year = str(date.year)
@@ -169,7 +183,12 @@ def get_competitions(username):
 
     competition_ids = [competition[0] for competition in competitions]
 
-    return competition_ids
+    if len(competition_ids) == 0:
+        return []
+
+    competitions_info = [get_competition(id) for id in competition_ids]
+
+    return competitions_info
 
 def get_users_in_competition(competition_id):
     conn = get_connection()
@@ -184,9 +203,7 @@ def get_users_in_competition(competition_id):
     return users_list
 
 
-# Given a username and competition id, return all the picks by that user for a competition
-# Returns binary array, where 1 is a pick for home team, 0 is away
-def get_user_picks(username, competition_id):
+def get_binary_picks(username, competition_id):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -198,9 +215,23 @@ def get_user_picks(username, competition_id):
     query_res = cur.fetchall()
     binary_picks = query_res[0][2:18]
 
-    # get current week
+    return binary_picks
+
+
+# Given a username and competition id, return all the picks by that user for a competition
+# Returns array of game predictions where each prediction is in the following form:
+# ('team picked by user', ('home team', 'away team'))
+def get_user_picks(username, competition_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    binary_picks = get_binary_picks(username, competition_id)
+
+    # get week of competition
     cur.execute('SELECT Week FROM Competitions WHERE ID=%s',(competition_id,))
     week = cur.fetchall()[0][0]
+
+    week = 6
 
     # get list of home teams
     cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=1', (week, ))
@@ -209,7 +240,7 @@ def get_user_picks(username, competition_id):
     # get list of away teams
     cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=0', (week, ))
     away_teams = cur.fetchall()
-
+    
     picks = []
 
     # assign binary picks to actual team values with the home and away teams
