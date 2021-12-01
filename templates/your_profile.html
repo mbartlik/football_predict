@@ -7,5 +7,15 @@
     <img class="avatar" src="{{userinfo['picture']}}"/>
     <h2>{{userinfo['name']}}</h2>
   </div>
+  {% if display_name %}
+    <h2>Display name - {{display_name}}</h2>
+  {% else %}
+    <form action="/profile" method="POST">
+      <label for="display_name">Display Name (once submitted, cannot be changed):</label><br>
+      <input class="input_field" type="text" name="display_name"><br><br>
+      <input type="submit" value="Submit">
+    </form>
+  {% endif %}
   <hr>
+  <h2>Wins - {{wins}}</h2>
 {% endblock %}

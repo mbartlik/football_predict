@@ -6,10 +6,10 @@
 <div>
   <h2 style="margin-top: 0px;">Previous Competitions</h2>
   <div id="note_div">
-      {% for name in competition_names %}
+      {% for competition in prev_competitions %}
         <a class="note" href={{display_links[loop.index-1]}}>
           <div>
-            <p class="note_text">{{name}}</p>
+            <p class="note_text">{{competition[0][1]}} - Week {{competition[0][4]}}</p>
           </div>
         </a>
         <hr>

@@ -3,8 +3,14 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+{% if admin %}
+  <div style="margin-bottom:50px">
+    <a href="/admin">Admin</a>
+  </div>
+{% endif %}
+
 <div>
-  <h2 style="margin-top: 0px;">Upcoming Competitions</h2>
+  <h2 style="margin-top: 0px;">Upcoming Competitions  -  Week {{nfl_week}}</h2>
   <div id="note_div">
       {% for name in competition_names %}
         <a class="note" href={{display_links[loop.index-1]}}>

@@ -3,10 +3,30 @@
 {% block title %}Display Competition{% endblock %}
 
 {% block content %}
-<h1 style="display:inline">{{name}}</h1>
+<h1 style="display:inline; margin-right:25px">{{name}}</h1>
+<p style="display:inline">Week {{week}}</p>
 <p style="display:inline; margin-left:30px">{{join_code}}</p>
 
 <hr>
+
+<div style="float:right">
+    {% if results %}
+        <table>
+            <tr>
+                <th>Place</th>
+                <th>User</th>
+            </tr>
+        {% for result in results %}
+            <tr>
+                <th>{{ result[0] }}</th>
+                <th>{{ result[1] }}</th>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+    <p>This competition does not have any results yet</p>
+    {% endif %}
+</div>
 
 <div>
     {% if picks_made %}
@@ -34,8 +54,8 @@
 
 <h3>Users</h3>
 <div id="note_div">
-    {% for user in users %}
-        <p>{{user}}</p>
+    {% for participant in participating %}
+        <p>{{participant}}</p>
     {% endfor %}
 </div>
 

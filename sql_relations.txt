@@ -43,3 +43,41 @@ CREATE TABLE Games (
     PickSlot INT NOT NULL,
     Home INT NOT NULL
 );
+
+CREATE TABLE Outcomes (
+    Week INT NOT NULL,
+    Game1 INT,
+    Game2 INT,
+    Game3 INT,
+    Game4 INT,
+    Game5 INT,
+    Game6 INT,
+    Game7 INT,
+    Game8 INT,
+    Game9 INT,
+    Game10 INT,
+    Game11 INT,
+    Game12 INT,
+    Game13 INT,
+    Game14 INT,
+    Game15 INT,
+    Game16 INT
+);
+INSERT INTO Outcomes (Week, Game1, Game2, Game3, Game4, Game5, Game6, Game7, Game8, Game9, Game10, Game11, Game12, Game13, Game14, Game15, Game16) VALUES (6, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+
+CREATE TABLE CompetitionResults (
+    CompetitionID INT NOT NULL,
+    Username VARCHAR(100),
+    Place INT,
+    PointsScored INT
+);
+
+
+
+
+
+
+Things to do
+Make it so you can't view a competition you're not in 
+Make it so underdogs score you extra points
+Make it so you can't join a competition twice

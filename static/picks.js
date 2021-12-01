@@ -20,7 +20,7 @@ window.onload = function startup() {
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.response == 'Success'){
-                    window.location.replace('/display-competition?competition_id=' + document.getElementById('competition_id').innerHTML)
+                    window.location.replace('/display-competition?id=' + document.getElementById('competition_id').innerHTML)
                 }
                 else {
                     console.log("error");

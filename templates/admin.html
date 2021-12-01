@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+
+{% if admin %}
+<h1>Admin</h1>
+<form action="/admin" method="post">
+    <label for="week">Week:</label><br>
+    <input name="week" type="text"><br>
+    <button name="submit_btn" value="Calculate competition results">Calculate competition results</button>
+</form>
+<p>{{message}}</p>
+
+
+{% else %}
+<p>You are not permitted to view this page</p>
+{% endif %}
+
+{% endblock %}

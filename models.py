@@ -188,6 +188,8 @@ def get_competitions(username):
 
     competitions_info = [get_competition(id) for id in competition_ids]
 
+    competitions_info.sort(key=lambda tup: tup[0][4]) # sort by week
+
     return competitions_info
 
 def get_users_in_competition(competition_id):
@@ -231,7 +233,7 @@ def get_user_picks(username, competition_id):
     cur.execute('SELECT Week FROM Competitions WHERE ID=%s',(competition_id,))
     week = cur.fetchall()[0][0]
 
-    week = 6
+    # week = get_current_nfl_week()
 
     # get list of home teams
     cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=1', (week, ))
@@ -302,3 +304,106 @@ def get_week(competition_id):
     conn.close()
 
     return week
+
+
+# Update the database so that competition results/winners are calculated
+# Return a message summarizing the changes made
+def update_competition_results(week):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    messages = [] # messages to be returned to admin user
+
+    # get all competitions completed in the requested week
+    result = cur.execute('SELECT ID FROM Competitions WHERE Week=%s', (week,))
+    completed_competitions = cur.fetchall()
+
+    if len(completed_competitions) == 0:
+        return 'there were no competitions in the requested week: ' + str(week)
+
+    # get the outcomes of games for the requested week
+    result = cur.execute('SELECT * FROM Outcomes WHERE Week=%s', (week,))
+    outcomes = cur.fetchall()
+
+    if len(outcomes) == 0:
+        return 'These games have not yet been completed'
+
+    outcomes = outcomes[0]
+
+    for i in range(len(completed_competitions)):
+        this_competition_id = completed_competitions[i][0]
+
+        search_res = cur.execute('SELECT * FROM Competing WHERE CompetitionID=%s', (this_competition_id,))
+        picks_made = cur.fetchall()
+
+        user_scores = []
+
+        for j in range(len(picks_made)):
+            # add up this user's correct picks
+            correct_sum = 0
+            for k in range(16):
+                if outcomes[k+1] == picks_made[j][k+2]:
+                    correct_sum += 1
+
+            user_scores.append((picks_made[j][0], correct_sum)) # record username with attached score
+
+        # sort so highest scores are first
+        user_scores.sort(key=lambda tup: tup[1], reverse=True)
+        
+        # update the data with ease username, score, place and this competition id
+        place = 1
+        for user_score in user_scores:
+            messages.append('Adding ' + user_score[0] + ' to CompetitionResults with place ' + str(place))
+            cur.execute('INSERT INTO CompetitionResults (CompetitionID, Username, Place, PointsScored) VALUES (%s, %s, %s, %s)', (this_competition_id, user_score[0], place, user_score[1]))
+            place += 1
+
+        conn.commit()
+
+    return messages
+
+# Get number of wins that a given user has
+def get_win_count(username):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute('SELECT COUNT(*) FROM CompetitionResults WHERE Username=%s AND Place=1', (username,))
+    win_count = cur.fetchall()[0][0]
+
+    conn.close()
+
+    return win_count
+
+
+# Get the results of a competition, given id
+def get_competition_results(id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute('SELECT * FROM CompetitionResults WHERE CompetitionID=%s ORDER BY Place', (id,))
+    results = cur.fetchall()
+
+    conn.close()
+
+    return results
+
+# Set a user's display name
+def set_display_name(username, display_name):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute('UPDATE Users SET DisplayName=%s WHERE Name=%s', (display_name, username))
+    conn.commit()
+
+    conn.close()
+
+# Get a user's info
+def get_user(username):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute('SELECT * FROM Users WHERE Name=%s', (username,))
+    user_info = cur.fetchall()[0]
+
+    conn.close()
+
+    return user_info
