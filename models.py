@@ -244,13 +244,9 @@ def get_user_picks(username, competition_id):
 
     binary_picks = get_binary_picks(username, competition_id)
 
-    print(binary_picks)
-
     # get week of competition
     cur.execute('SELECT Week FROM Competitions WHERE ID=%s',(competition_id,))
     week = cur.fetchall()[0][0]
-
-    print(week)
 
     # week = get_current_nfl_week()
 
@@ -258,13 +254,9 @@ def get_user_picks(username, competition_id):
     cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=1', (week, ))
     home_teams = cur.fetchall()
 
-    print(home_teams)
-
     # get list of away teams
     cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=0', (week, ))
     away_teams = cur.fetchall()
-
-    print(away_teams)
     
     picks = []
 
