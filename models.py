@@ -49,11 +49,19 @@ def get_current_nfl_week():
     nfl_week = -1
     python_date = datetime.datetime.now()
     for i in range(len(open_dates)):
+
+        # temporary for testing 
+        nfl_week = 18
+        break
+        # ^^^^ temporary for testing ^^^
+
         if i == (len(open_dates) - 1):
             raise Exception('Date out of range')   
         if python_date < open_dates[i]:
             nfl_week = i + 1
             break
+
+    
 
     return nfl_week
 
@@ -105,6 +113,13 @@ def create_competition_sql(competition_name, username):
     nfl_week = -1
     close_date = ''
     for i in range(len(open_dates)):
+
+        # temporary for testing 
+        nfl_week = 18
+        close_date = get_sql_date(close_dates[17])
+        break
+        # ^^^^ temporary for testing ^^^
+
         if i == (len(open_dates) - 1):
             raise Exception('Date out of range')   
         if python_date < open_dates[i]:
@@ -229,9 +244,13 @@ def get_user_picks(username, competition_id):
 
     binary_picks = get_binary_picks(username, competition_id)
 
+    print(binary_picks)
+
     # get week of competition
     cur.execute('SELECT Week FROM Competitions WHERE ID=%s',(competition_id,))
     week = cur.fetchall()[0][0]
+
+    print(week)
 
     # week = get_current_nfl_week()
 
@@ -239,9 +258,13 @@ def get_user_picks(username, competition_id):
     cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=1', (week, ))
     home_teams = cur.fetchall()
 
+    print(home_teams)
+
     # get list of away teams
     cur.execute('SELECT Team FROM Games WHERE Week=%s AND Home=0', (week, ))
     away_teams = cur.fetchall()
+
+    print(away_teams)
     
     picks = []
 

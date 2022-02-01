@@ -22,6 +22,9 @@ app = Flask(__name__)
 
 app.secret_key = 'giusdbwfaw'
 
+#base_url = 'http://127.0.0.1:5000/'
+base_url = 'https://seismic-gecko-326618.ue.r.appspot.com/'
+
 oauth = OAuth(app)
 
 auth0 = oauth.register(
@@ -74,7 +77,7 @@ def index():
 
 @app.route('/login')
 def login():
-    return auth0.authorize_redirect(redirect_uri='http://127.0.0.1:5000/callback')
+    return auth0.authorize_redirect(redirect_uri=base_url + 'callback')
 
 
 @app.route('/logout')
@@ -82,7 +85,7 @@ def logout():
     # Clear session stored data
     session.clear()
     # Redirect user to logout endpoint
-    return redirect(auth0.api_base_url + '/v2/logout?returnTo=http%3A%2F%2F127.0.0.1:5000/&client_id=06F6PVKlsBK5xXyHHc6QiBnDYPox7ctx')
+    return redirect(auth0.api_base_url + '/v2/logout?returnTo=' + base_url + '&client_id=djEG1S4NhP9s8fOFvZZDNcED8G379qsG')
 
 
 @app.route("/home")
