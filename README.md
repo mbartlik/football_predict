@@ -10,3 +10,6 @@ Make picks
 Score users' picks against each other based on NFL results  
 Auth0 login/security  
 All data stored in google cloud sql  
+
+## Demo
+See 'demo.mov' in this repository.
